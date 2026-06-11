@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %} · Sign in{% endblock %}
+{% block nav %}{% endblock %}
+{% block body %}
+<div style="max-width:380px;margin:9vh auto">
+  <div class="card">
+    <h1 style="font-size:22px;font-weight:800;margin:0 0 4px">Sign in</h1>
+    <p class="muted" style="font-size:13px;margin:0 0 18px">
+      AutoASM-NG is private. Enter your credentials to continue.</p>
+    {% if error %}
+    <div style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);
+         color:#fca5a5;padding:10px 12px;border-radius:11px;font-size:13px;margin-bottom:14px">
+      {{ error }}</div>
+    {% endif %}
+    <form method="post" autocomplete="on">
+      <div class="field">
+        <label>Username</label>
+        <input name="username" autofocus autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input name="password" type="password" autocomplete="current-password">
+      </div>
+      <button class="btn" style="width:100%;justify-content:center" type="submit">Sign in</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -4,9 +4,12 @@ Run via:  python -m autoasm.cli serve
 """
 from __future__ import annotations
 
-from flask import (Flask, render_template, abort, send_file, request,
-                   redirect, url_for, jsonify)
+import hmac
 
+from flask import (Flask, render_template, abort, send_file, request,
+                   redirect, url_for, jsonify, session)
+
+from . import config
 from .models import Organisation, Scan, get_session
 from .reporting import (scan_summary, export_pdf, export_de_xlsx,
                         scan_assets, export_assets_xlsx, export_assets_csv)
@@ -15,6 +18,47 @@ from .jobs import start_scan, job_status
 
 def create_app() -> Flask:
     app = Flask(__name__)
+    app.secret_key = config.SECRET_KEY
+    # Gate the dashboard only when a password is configured (AUTOASM_PASSWORD).
+    # Local runs stay open; a public deployment sets the password to require login.
+    auth_required = bool(config.DASHBOARD_PASSWORD)
+
+    @app.context_processor
+    def _auth_ctx():
+        return {"auth_on": auth_required, "logged_in": session.get("auth", False)}
+
+    @app.before_request
+    def _require_login():
+        if not auth_required:
+            return None
+        if request.endpoint in ("login", "logout", "static"):
+            return None
+        if not session.get("auth"):
+            return redirect(url_for("login", next=request.path))
+        return None
+
+    @app.route("/login", methods=["GET", "POST"])
+    def login():
+        if not auth_required:
+            return redirect(url_for("index"))
+        error = None
+        if request.method == "POST":
+            u = request.form.get("username", "")
+            p = request.form.get("password", "")
+            ok = (hmac.compare_digest(u, config.DASHBOARD_USER) and
+                  hmac.compare_digest(p, config.DASHBOARD_PASSWORD))
+            if ok:
+                session["auth"] = True
+                session.permanent = True
+                nxt = request.args.get("next", "")
+                return redirect(nxt if nxt.startswith("/") else url_for("index"))
+            error = "Invalid username or password."
+        return render_template("login.html", error=error)
+
+    @app.route("/logout")
+    def logout():
+        session.clear()
+        return redirect(url_for("login") if auth_required else url_for("index"))
 
     @app.route("/")
     def index():

@@ -18,6 +18,15 @@ services:
     plan: free
     healthCheckPath: /
     envVars:
+      # Dashboard login. Set AUTOASM_USER and AUTOASM_PASSWORD in the Render
+      # dashboard to make the app private; the secret key is generated so the
+      # session cookie cannot be forged. With no password set, the app stays open.
+      - key: AUTOASM_SECRET_KEY
+        generateValue: true
+      - key: AUTOASM_USER
+        sync: false
+      - key: AUTOASM_PASSWORD
+        sync: false
       - key: NVD_API_KEY
         sync: false          # optional, raises the NVD rate limit
       - key: HIBP_API_KEY

@@ -25,6 +25,16 @@ def _normalise_db_url(url: str) -> str:
 
 DB_URL = _normalise_db_url(os.environ.get("AUTOASM_DB_URL", f"sqlite:///{DB_PATH}"))
 
+# --- Dashboard authentication (gate the UI on public deployments) ----------
+# Auth is enabled only when AUTOASM_PASSWORD is set. Local runs stay open; a
+# public deployment becomes private simply by setting the password. SECRET_KEY
+# signs the session cookie and MUST be a strong random value in production, so a
+# public instance left on the default key cannot have its session forged
+# (render.yaml generates one automatically).
+SECRET_KEY = os.environ.get("AUTOASM_SECRET_KEY", "dev-insecure-change-me")
+DASHBOARD_USER = os.environ.get("AUTOASM_USER", "admin")
+DASHBOARD_PASSWORD = os.environ.get("AUTOASM_PASSWORD")
+
 # Anonymised regional breach-pattern corpus (seed data for the correlation engine).
 BREACH_CORPUS_PATH = BASE_DIR / "autoasm" / "data" / "breach_patterns.json"
 

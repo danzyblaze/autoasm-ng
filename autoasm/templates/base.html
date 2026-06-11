@@ -84,8 +84,11 @@
     <div class="nav">
       <a class="logo" href="/"><span class="mark">🛡</span> AutoASM<b>-NG</b></a>
       <nav class="navlinks">
+        {% block nav %}
         <a href="/">Dashboard</a>
         <a href="/new" class="btn" style="padding:7px 14px">+ New scan</a>
+        {% if auth_on and logged_in %}<a href="/logout">Logout</a>{% endif %}
+        {% endblock %}
       </nav>
     </div>
   </header>
