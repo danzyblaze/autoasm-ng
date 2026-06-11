@@ -1,0 +1,50 @@
+# Render blueprint — single AutoASM-NG web app (UI + scan engine).
+# Deploy: render.com -> New -> Blueprint -> pick this repo. It reads this file.
+#
+# FREE-TIER TEST CONFIG (current):
+#   - plan: free   (zero cost)
+#   - uses SQLite on the container's local disk (no managed database)
+#   Caveats of the free plan, acceptable for a test/portfolio demo:
+#   - the service sleeps after ~15 minutes with no traffic; a scan can be
+#     interrupted if the browser tab is closed mid-scan
+#   - the disk is ephemeral, so scan history resets on each redeploy/restart
+#   For the business phase, switch to the paid config at the bottom, which
+#   adds an always-on Starter plan and a persistent Postgres database.
+services:
+  - type: web
+    name: autoasm-ng
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: NVD_API_KEY
+        sync: false          # optional, raises the NVD rate limit
+      - key: HIBP_API_KEY
+        sync: false          # optional
+
+# =====================================================================
+# PRODUCTION UPGRADE (business phase) — replace the service block above with:
+#
+# services:
+#   - type: web
+#     name: autoasm-ng
+#     runtime: docker
+#     dockerfilePath: ./Dockerfile
+#     plan: starter          # always-on; scans are long-running
+#     healthCheckPath: /
+#     envVars:
+#       - key: AUTOASM_DB_URL
+#         fromDatabase:
+#           name: autoasm-db
+#           property: connectionString
+#       - key: NVD_API_KEY
+#         sync: false
+#       - key: HIBP_API_KEY
+#         sync: false
+#
+# databases:
+#   - name: autoasm-db
+#     plan: basic-256mb
+#     postgresMajorVersion: "16"
+# =====================================================================

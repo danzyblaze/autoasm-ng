@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AutoASM-NG{% block title %}{% endblock %}</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --navy:#0b1120; --panel:#111a2e; --panel2:#0e1626; --line:rgba(255,255,255,.06);
+      --brand:#3b82f6; --brand2:#60a5fa; --txt:#e2e8f0; --mut:#94a3b8; --dim:#64748b;
+      --crit:#ef4444; --high:#f97316; --med:#eab308; --low:#3b82f6; --info:#64748b;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--txt);
+      min-height:100vh;
+      background:
+        radial-gradient(1100px 560px at 75% -12%, rgba(59,130,246,.13), transparent 60%),
+        radial-gradient(820px 460px at -5% 105%, rgba(168,85,247,.09), transparent 55%),
+        #070b16;}
+    a{color:inherit;text-decoration:none}
+    header{position:sticky;top:0;z-index:30;backdrop-filter:blur(14px);
+      background:rgba(7,11,22,.72);border-bottom:1px solid var(--line)}
+    .nav{max-width:1120px;margin:0 auto;display:flex;align-items:center;
+      justify-content:space-between;padding:13px 22px}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.02em}
+    .logo .mark{display:grid;place-items:center;height:34px;width:34px;border-radius:11px;
+      background:linear-gradient(135deg,#3b82f6,#a855f7);
+      box-shadow:0 0 0 1px rgba(59,130,246,.2),0 8px 30px -10px rgba(59,130,246,.6);font-size:18px}
+    .logo b{color:var(--brand2)}
+    .navlinks{display:flex;align-items:center;gap:6px;font-size:14px}
+    .navlinks a{padding:7px 13px;border-radius:9px;color:var(--mut)}
+    .navlinks a:hover{background:rgba(255,255,255,.05);color:#fff}
+    .wrap{max-width:1120px;margin:28px auto;padding:0 22px}
+    .btn{display:inline-flex;align-items:center;gap:8px;background:var(--brand);
+      color:#fff;padding:9px 15px;border-radius:11px;font-weight:600;font-size:14px;
+      border:0;cursor:pointer;transition:.15s}
+    .btn:hover{background:#2563eb}
+    .btn-ghost{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.12);
+      padding:9px 15px;border-radius:11px;font-weight:500;font-size:14px;color:var(--txt)}
+    .btn-ghost:hover{background:rgba(255,255,255,.05)}
+    .card{background:rgba(17,26,46,.7);border:1px solid var(--line);border-radius:18px;
+      padding:20px;box-shadow:0 18px 50px -30px rgba(0,0,0,.8);backdrop-filter:blur(6px)}
+    .grid{display:grid;gap:16px}
+    .stat .n{font-size:30px;font-weight:800;line-height:1.1}
+    .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin-top:4px}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:11px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+    th{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+    tr:hover td{background:rgba(255,255,255,.02)}
+    .badge{display:inline-block;padding:2px 9px;border-radius:8px;font-size:11px;font-weight:700}
+    .Critical{background:rgba(239,68,68,.16);color:#fca5a5}
+    .High{background:rgba(249,115,22,.16);color:#fdba74}
+    .Medium{background:rgba(234,179,8,.16);color:#fde047}
+    .Low{background:rgba(59,130,246,.16);color:#93c5fd}
+    .Informational{background:rgba(100,116,139,.18);color:#cbd5e1}
+    .kev{background:#fff;color:#000;font-size:10px;font-weight:800;padding:1px 6px;border-radius:6px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+    .muted{color:var(--mut)} .dim{color:var(--dim)}
+    input,select{width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,.1);
+      border-radius:11px;background:rgba(14,22,38,.85);color:var(--txt);font-size:14px;
+      font-family:inherit;margin-top:6px}
+    input:focus,select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(59,130,246,.25)}
+    label{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);font-weight:600}
+    .field{margin-bottom:16px}
+    canvas{max-height:240px}
+    .hero h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:0 0 8px}
+    .hero p{color:var(--mut);max-width:640px;line-height:1.6;margin:0}
+    .feat{border:1px solid var(--line);background:rgba(14,22,38,.5);border-radius:14px;padding:15px}
+    .feat .t{font-weight:600;margin-top:8px;font-size:14px}
+    .feat .d{color:var(--mut);font-size:12.5px;margin-top:2px}
+    .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--mut);
+      text-transform:uppercase;letter-spacing:.05em}
+    .dot{height:8px;width:8px;border-radius:50%}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+    .live{animation:pulse 1.5s ease-in-out infinite}
+    footer{max-width:1120px;margin:0 auto;padding:30px 22px;color:var(--dim);font-size:12px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav">
+      <a class="logo" href="/"><span class="mark">🛡</span> AutoASM<b>-NG</b></a>
+      <nav class="navlinks">
+        <a href="/">Dashboard</a>
+        <a href="/new" class="btn" style="padding:7px 14px">+ New scan</a>
+      </nav>
+    </div>
+  </header>
+  <div class="wrap">{% block body %}{% endblock %}</div>
+  <footer>
+    AutoASM-NG performs passive, non-intrusive discovery only. Scan assets you own
+    or are authorised to assess.
+  </footer>
+</body>
+</html>

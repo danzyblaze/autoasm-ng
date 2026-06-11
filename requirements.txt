@@ -1,0 +1,21 @@
+# AutoASM-NG — Python dependencies (single deployable web app)
+
+# Web app
+Flask>=3.0
+gunicorn>=22.0
+
+# Scan engine
+SQLAlchemy>=2.0
+requests>=2.31
+dnspython>=2.4
+cryptography>=42.0
+reportlab>=4.0
+
+# Production database driver (SQLite is built-in for dev; Postgres for deploy)
+psycopg2-binary>=2.9
+
+# --- Optional external CLI tools (auto-detected at runtime; not pip-installable) ---
+# amass, subfinder, assetfinder   -> richer subdomain discovery
+# nmap                            -> faster/deeper port + service fingerprinting
+# nuclei                          -> template-based misconfiguration / CVE checks
+# The platform degrades gracefully to pure-Python implementations when absent.

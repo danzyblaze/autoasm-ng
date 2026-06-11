@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block body %}
+
+<section class="card hero" style="position:relative;overflow:hidden;margin-bottom:22px">
+  <div style="position:absolute;right:-60px;top:-60px;width:220px;height:220px;
+    border-radius:50%;background:rgba(59,130,246,.12);filter:blur(50px)"></div>
+  <h1>Know your attack surface before attackers do.</h1>
+  <p>AutoASM-NG discovers your internet-facing assets, runs passive non-intrusive
+     checks, and ranks every exposure by how it is actually being exploited in the
+     Nigerian financial sector, not just by raw CVSS.</p>
+  <div style="display:flex;gap:12px;margin-top:18px;flex-wrap:wrap">
+    <a href="/new" class="btn">+ Start a scan</a>
+  </div>
+  <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-top:20px">
+    <div class="feat"><div style="font-size:18px">📡</div>
+      <div class="t">Multi-source discovery</div>
+      <div class="d">Subdomains, ASN/IP, cloud buckets, APIs</div></div>
+    <div class="feat"><div style="font-size:18px">🔍</div>
+      <div class="t">Passive checks</div>
+      <div class="d">Ports, TLS, exposed files, takeover</div></div>
+    <div class="feat"><div style="font-size:18px">🎯</div>
+      <div class="t">Breach-weighted risk</div>
+      <div class="d">NVD + CISA KEV + regional patterns</div></div>
+  </div>
+</section>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin:0 4px 12px">
+  <h2 style="font-size:18px;margin:0">Recent scans</h2>
+</div>
+
+{% if not scans %}
+  <div class="card" style="text-align:center;padding:46px">
+    <p class="muted">No scans yet.</p>
+    <a href="/new" class="btn" style="margin-top:12px">+ Run your first scan</a>
+  </div>
+{% else %}
+  <div class="grid">
+    {% for s in scans %}
+    <a href="/scan/{{ s.id }}" class="card" style="display:flex;align-items:center;
+       justify-content:space-between;transition:.15s"
+       onmouseover="this.style.borderColor='rgba(59,130,246,.35)'"
+       onmouseout="this.style.borderColor='var(--line)'">
+      <div>
+        <div style="font-weight:700">{{ s.org }}</div>
+        <div class="dim" style="font-size:12px;margin-top:2px">
+          Scan #{{ s.id }} · {{ s.started }}</div>
+      </div>
+      <div style="display:flex;gap:26px;align-items:center">
+        <div style="text-align:right"><div style="font-weight:700">{{ s.assets }}</div>
+          <div class="dim" style="font-size:10px;text-transform:uppercase">assets</div></div>
+        <div style="text-align:right"><div style="font-weight:700">{{ s.exposures }}</div>
+          <div class="dim" style="font-size:10px;text-transform:uppercase">exposures</div></div>
+        <div style="text-align:right"><div style="font-weight:700">{{ s.duration }}s</div>
+          <div class="dim" style="font-size:10px;text-transform:uppercase">time</div></div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

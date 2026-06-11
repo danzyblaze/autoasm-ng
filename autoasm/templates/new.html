@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block body %}
+<div style="max-width:540px;margin:0 auto">
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+      <span style="display:grid;place-items:center;height:42px;width:42px;border-radius:12px;
+        background:rgba(59,130,246,.15);font-size:20px">📡</span>
+      <div>
+        <h1 style="font-size:18px;margin:0">New scan</h1>
+        <div class="muted" style="font-size:12.5px">Passive, non-intrusive discovery only.</div>
+      </div>
+    </div>
+    <form method="post">
+      <div class="field">
+        <label>Organisation name</label>
+        <input name="org" required placeholder="Example Bank">
+      </div>
+      <div class="field">
+        <label>Root domains (comma-separated)</label>
+        <input name="domains" required placeholder="example.com, example.ng">
+        <div class="dim" style="font-size:12px;margin-top:6px">
+          Only domains you own or are authorised to assess.</div>
+      </div>
+      <div class="field">
+        <label>Default asset criticality (1–5)</label>
+        <select name="criticality">
+          <option value="1">1 — low (marketing / static)</option>
+          <option value="2">2</option>
+          <option value="3" selected>3 — medium</option>
+          <option value="4">4</option>
+          <option value="5">5 — critical (payment / auth)</option>
+        </select>
+      </div>
+      <button class="btn" type="submit" style="width:100%;justify-content:center">
+        🛡 Launch scan</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

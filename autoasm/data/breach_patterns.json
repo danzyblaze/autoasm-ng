@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "description": "Anonymised, aggregate breach-pattern prior for the Nigerian financial sector. De-identified: NO institution, client, or engagement is named or identifiable. Values are sector-level proportions and criticality ratios used to weight risk scoring (project report, Ch.3 §3.4.6). Corroborated against public sources (OWASP Top 10 2021, OWASP API Top 10 2023, Verizon DBIR 2023, CISA KEV).",
+    "sample_size": 1266,
+    "exported": "2026-05-29",
+    "public_corroboration": ["OWASP-Top-10-2021", "OWASP-API-Top-10-2023", "Verizon-DBIR-2023", "CISA-KEV"]
+  },
+  "patterns": [
+    {"tag": "rce", "label": "Remote Code Execution", "prevalence": 0.235, "critical_ratio": 0.30, "maps_exposure_classes": ["exposed-service", "outdated-software", "exposed-admin-panel", "cve-match"]},
+    {"tag": "account_takeover", "label": "Account Takeover", "prevalence": 0.066, "critical_ratio": 0.42, "maps_exposure_classes": ["auth-endpoint", "exposed-login", "password-reset"]},
+    {"tag": "crypto_weak", "label": "Weak / Hardcoded Cryptography", "prevalence": 0.056, "critical_ratio": 0.10, "maps_exposure_classes": ["weak-tls", "expired-cert", "self-signed-cert", "exposed-config"]},
+    {"tag": "hardcoded_secrets", "label": "Hardcoded Secrets in Web/Mobile Apps", "prevalence": 0.045, "critical_ratio": 0.65, "maps_exposure_classes": ["hardcoded-secret", "exposed-sourcemap"]},
+    {"tag": "leaked_artifacts", "label": "Leaked Credentials in Repos/Deployment Artifacts", "prevalence": 0.030, "critical_ratio": 0.60, "maps_exposure_classes": ["exposed-git", "exposed-config", "exposed-sourcemap"]},
+    {"tag": "dev_in_prod", "label": "Dev/Staging Environment Exposed in Production", "prevalence": 0.035, "critical_ratio": 0.40, "maps_exposure_classes": ["exposed-dev-env", "exposed-admin-panel"]},
+    {"tag": "unregulated_thirdparty", "label": "Unregulated Third-Party Deployment", "prevalence": 0.020, "critical_ratio": 0.25, "maps_exposure_classes": ["third-party-hosting"]},
+    {"tag": "broken_access_control", "label": "Broken Access Control", "prevalence": 0.051, "critical_ratio": 0.34, "maps_exposure_classes": ["exposed-api", "open-endpoint", "idor"]},
+    {"tag": "xss", "label": "Cross-Site Scripting", "prevalence": 0.040, "critical_ratio": 0.14, "maps_exposure_classes": ["web-app", "reflected-input"]},
+    {"tag": "auth_bypass", "label": "Authentication Bypass", "prevalence": 0.028, "critical_ratio": 0.34, "maps_exposure_classes": ["auth-endpoint", "exposed-admin-panel", "open-endpoint"]},
+    {"tag": "sqli", "label": "SQL Injection", "prevalence": 0.017, "critical_ratio": 0.27, "maps_exposure_classes": ["web-app", "exposed-api"]},
+    {"tag": "info_disclosure", "label": "Information Disclosure", "prevalence": 0.013, "critical_ratio": 0.31, "maps_exposure_classes": ["exposed-config", "exposed-file", "stack-trace", "directory-listing", "exposed-git"]},
+    {"tag": "default_credentials", "label": "Default Credentials", "prevalence": 0.011, "critical_ratio": 1.00, "maps_exposure_classes": ["exposed-admin-panel", "exposed-service", "default-login"]},
+    {"tag": "idor", "label": "Insecure Direct Object Reference", "prevalence": 0.008, "critical_ratio": 0.50, "maps_exposure_classes": ["exposed-api", "open-endpoint"]},
+    {"tag": "subdomain_takeover", "label": "Subdomain Takeover", "prevalence": 0.006, "critical_ratio": 0.40, "maps_exposure_classes": ["dangling-dns", "subdomain-takeover"]},
+    {"tag": "session_mgmt", "label": "Session Management", "prevalence": 0.006, "critical_ratio": 0.0, "maps_exposure_classes": ["auth-endpoint", "weak-tls"]},
+    {"tag": "path_traversal", "label": "Path Traversal", "prevalence": 0.006, "critical_ratio": 0.0, "maps_exposure_classes": ["web-app", "exposed-file"]},
+    {"tag": "token_forgery", "label": "Token Forgery (JWT)", "prevalence": 0.006, "critical_ratio": 0.57, "maps_exposure_classes": ["auth-endpoint", "exposed-api"]},
+    {"tag": "cloud_exposure", "label": "Public Cloud Storage Exposure", "prevalence": 0.010, "critical_ratio": 0.45, "maps_exposure_classes": ["public-bucket", "open-storage"]}
+  ]
+}

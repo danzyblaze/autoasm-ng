@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div style="display:flex;align-items:flex-end;justify-content:space-between;
+     gap:14px;flex-wrap:wrap;margin-bottom:18px">
+  <div>
+    <h1 style="font-size:24px;margin:0">{{ d.organisation }} — Asset Inventory</h1>
+    <div class="muted" style="font-size:13px;margin-top:2px">
+      Scan #{{ d.scan_id }} · {{ d.root_domains|join(", ") }} · {{ d.total }} assets</div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <a class="btn" href="/scan/{{ d.scan_id }}/assets.xlsx">⬇ Inventory (XLSX)</a>
+    <a class="btn" href="/scan/{{ d.scan_id }}/assets.csv">⬇ CSV</a>
+    <a class="btn" href="/scan/{{ d.scan_id }}">← Scan</a>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h3 style="margin:0 0 10px;font-size:14px">Breakdown by type</h3>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    {% for t, n in d.breakdown.items() %}
+    <div class="card stat" style="min-width:120px;padding:12px 16px">
+      <div class="n">{{ n }}</div><div class="l">{{ t }}</div></div>
+    {% endfor %}
+    {% if not d.breakdown %}<div class="dim">No assets discovered yet.</div>{% endif %}
+  </div>
+</div>
+
+<div class="card" style="padding:0;overflow:hidden">
+  <div style="padding:14px 18px;border-bottom:1px solid var(--line);display:flex;
+       justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+    <h3 style="margin:0;font-size:14px">Discovered assets
+      <span class="dim" style="font-weight:400;font-size:12px">— the external attack surface, findings aside</span></h3>
+    <input id="filter" placeholder="filter…" style="background:rgba(7,11,22,.6);
+      border:1px solid var(--line);border-radius:8px;color:var(--fg);padding:6px 10px;font-size:12px">
+  </div>
+  <div style="overflow:auto">
+  <table id="assetTable">
+    <tr><th>#</th><th>Type</th><th>Asset</th><th>Source</th>
+        <th>Crit.</th><th>Exposures</th><th>First seen</th></tr>
+    {% for a in d.assets %}
+    <tr>
+      <td class="dim">{{ loop.index }}</td>
+      <td><span class="badge">{{ a.type }}</span></td>
+      <td class="mono" style="font-size:12px;max-width:380px;word-break:break-all">{{ a.value }}</td>
+      <td class="dim" style="font-size:12px">{{ a.source }}</td>
+      <td>{{ a.criticality }}</td>
+      <td>{% if a.exposures %}<span class="kev">{{ a.exposures }}</span>{% else %}<span class="dim">0</span>{% endif %}</td>
+      <td class="dim" style="font-size:12px">{{ a.first_seen }}</td>
+    </tr>
+    {% endfor %}
+    {% if not d.assets %}
+    <tr><td colspan="7" class="dim" style="text-align:center;padding:36px">
+      No assets discovered yet. If the scan is still running, refresh shortly.</td></tr>
+    {% endif %}
+  </table>
+  </div>
+</div>
+
+<script>
+const f=document.getElementById('filter'), rows=[...document.querySelectorAll('#assetTable tr')].slice(1);
+f.addEventListener('input',()=>{const q=f.value.toLowerCase();
+  rows.forEach(r=>{r.style.display = r.textContent.toLowerCase().includes(q)?'':'none';});});
+</script>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div style="display:flex;align-items:flex-end;justify-content:space-between;
+     gap:14px;flex-wrap:wrap;margin-bottom:18px">
+  <div>
+    <h1 style="font-size:24px;margin:0">{{ d.organisation }}</h1>
+    <div class="muted" style="font-size:13px;margin-top:2px">
+      Scan #{{ d.scan_id }} · {{ d.root_domains|join(", ") }}</div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <a class="btn" href="/scan/{{ d.scan_id }}/assets">🗂 Asset inventory</a>
+    <a class="btn" href="/scan/{{ d.scan_id }}/de">⬇ Findings report (XLSX)</a>
+    <a class="btn" href="/scan/{{ d.scan_id }}/pdf">⬇ PDF report</a>
+  </div>
+</div>
+
+<div class="grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+  <div class="card stat"><div class="n">{{ d.asset_count }}</div><div class="l">Assets</div></div>
+  <div class="card stat"><div class="n">{{ d.exposure_count }}</div><div class="l">Exposures</div></div>
+  <div class="card stat"><div class="n" style="color:#fdba74">
+    {{ (d.band_counts.get('Critical',0) + d.band_counts.get('High',0)) }}</div>
+    <div class="l">Critical + High</div></div>
+  <div class="card stat"><div class="n">{{ d.duration_seconds }}s</div><div class="l">Scan time</div></div>
+</div>
+
+<div class="grid" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
+  <div class="card"><h3 style="margin:0 0 8px;font-size:14px">Risk bands</h3>
+    <canvas id="bandChart"></canvas></div>
+  <div class="card"><h3 style="margin:0 0 8px;font-size:14px">Top breach patterns</h3>
+    <canvas id="tagChart"></canvas></div>
+</div>
+
+<div class="card" style="padding:0;overflow:hidden">
+  <div style="padding:14px 18px;border-bottom:1px solid var(--line)">
+    <h3 style="margin:0;font-size:14px">Prioritised findings
+      <span class="dim" style="font-weight:400;font-size:12px">
+        — ranked by criticality × severity × breach-relevance · click a row for evidence & fix</span></h3>
+  </div>
+  <div style="overflow:auto">
+  <table>
+    <tr><th>#</th><th>Band</th><th>Score</th><th>Class</th><th>Asset</th>
+        <th>What we found</th><th>CVSS</th><th>Tags / CVEs</th></tr>
+    {% for f in d.findings %}
+    <tr class="frow" onclick="tog('det{{ loop.index }}')" style="cursor:pointer">
+      <td class="dim">{{ f.rank }}</td>
+      <td><span class="badge {{ f.band }}">{{ f.band }}</span></td>
+      <td class="mono">{{ "%.3f"|format(f.score) }}</td>
+      <td>{{ f.class }}</td>
+      <td class="mono" style="font-size:12px;max-width:200px;word-break:break-all">{{ f.asset }}</td>
+      <td style="font-size:12px">{{ f.description or "—" }}</td>
+      <td>{{ f.cvss }}</td>
+      <td style="font-size:12px">
+        {{ f.breach_tags|join(", ") }}{% if f.cves %} {{ f.cves|join(", ") }}{% endif %}
+        {% if f.kev %}<span class="kev">KEV</span>{% endif %}</td>
+    </tr>
+    <tr id="det{{ loop.index }}" style="display:none;background:rgba(7,11,22,.45)">
+      <td colspan="8" style="font-size:12.5px;padding:12px 18px;line-height:1.6">
+        <div><b>Finding:</b> {{ f.description or "—" }}</div>
+        <div><b>Asset:</b> <span class="mono">{{ f.asset }}</span>
+             &nbsp;·&nbsp; type: {{ f.asset_type }}</div>
+        {% if f.evidence %}<div><b>Evidence:</b> <span class="mono">{{ f.evidence }}</span></div>{% endif %}
+        <div><b>Why it matters:</b> CVSS {{ f.cvss }}, breach-relevance ×{{ "%.2f"|format(f.breach_relevance) }}
+             {% if f.breach_tags %}(pattern: {{ f.breach_tags|join(", ") }}){% endif %}
+             {% if f.kev %}<span class="kev">in CISA KEV</span>{% endif %}</div>
+        <div><b>Remediation:</b> {{ f.remediation }}</div>
+      </td>
+    </tr>
+    {% endfor %}
+    {% if not d.findings %}
+    <tr><td colspan="8" class="dim" style="text-align:center;padding:36px">
+      No exposures found. The surface looks clean.</td></tr>
+    {% endif %}
+  </table>
+  </div>
+</div>
+
+<script>
+function tog(id){const e=document.getElementById(id);
+  e.style.display = (e.style.display==='none'||!e.style.display) ? 'table-row' : 'none';}
+</script>
+
+<script>
+const bands = {{ d.band_counts|tojson }};
+const order=["Critical","High","Medium","Low","Informational"];
+const colors=["#ef4444","#f97316","#eab308","#3b82f6","#64748b"];
+new Chart(document.getElementById('bandChart'),{type:'doughnut',
+  data:{labels:order,datasets:[{data:order.map(b=>bands[b]||0),backgroundColor:colors,
+    borderWidth:0}]},
+  options:{plugins:{legend:{position:'right',labels:{color:'#94a3b8',font:{size:11}}}},
+    cutout:'62%'}});
+const tagCounts={};
+{% for f in d.findings %}{% for t in f.breach_tags %}
+  tagCounts["{{ t }}"]=(tagCounts["{{ t }}"]||0)+1;{% endfor %}{% endfor %}
+const tl=Object.keys(tagCounts),tv=tl.map(k=>tagCounts[k]);
+new Chart(document.getElementById('tagChart'),{type:'bar',
+  data:{labels:tl,datasets:[{data:tv,backgroundColor:'#3b82f6',borderRadius:5}]},
+  options:{indexAxis:'y',plugins:{legend:{display:false}},
+    scales:{x:{beginAtZero:true,ticks:{precision:0,color:'#64748b'},grid:{color:'rgba(255,255,255,.05)'}},
+      y:{ticks:{color:'#94a3b8',font:{size:11}},grid:{display:false}}}}});
+</script>
+{% endblock %}

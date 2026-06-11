@@ -1,0 +1,73 @@
+# =====================================================================
+# AutoASM-NG .gitignore
+# The public repo ships ONLY the deployable tool. No thesis files, no
+# internal notes, no scan output, and nothing that names any firm, client,
+# or engagement. Top-level paths are anchored with a leading slash so the
+# tool's own autoasm/data/ corpus is NOT excluded.
+# =====================================================================
+
+# Confidential / internal (never public)
+/notes/
+/STATUS.md
+/ROADMAP.md
+eval/private/
+cred-mapping.txt
+*.client.json
+*.client.*
+
+# Scan output and runtime recon (root data dir only; keep autoasm/data/)
+/data/
+
+# Learned subdomain wordlist: mined from real engagements and contains client
+# hostname labels, so it must NEVER be published. The tool falls back to the
+# built-in generic wordlist in discovery.py when this file is absent.
+autoasm/data/subdomains.txt
+
+# Research / thesis materials (not the deployable tool)
+/chapters/
+/appendix/
+/corpus/
+/references/
+/build_report.py
+/make_review_and_viva.py
+/verify.py
+
+# Generated documents / report exports (anywhere)
+*.docx
+*.pdf
+*.xlsx
+*.csv
+*.png
+~$*
+
+# One-off scripts and scratch
+/_scan_public.py
+/_build_*.py
+/benchmark_*.py
+/mine_corpus*.py
+/demo_ct.py
+/report_extract.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*.bak
+*.egg-info/
+.venv/
+venv/
+env/
+*.db
+*.db-*
+*.log
+
+# Secrets / env
+.env
+.env.local
+.env.*
+
+# Node / OS / editor
+node_modules/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

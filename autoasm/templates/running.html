@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block body %}
+<div style="max-width:660px;margin:0 auto">
+  <div class="card" style="text-align:center">
+    <div id="spinner" style="font-size:34px" class="live">📡</div>
+    <h2 id="state" style="margin:14px 0 4px">Starting scan…</h2>
+    <div class="muted" id="counts" style="font-size:13px">Connecting…</div>
+    <div class="muted" id="phase" style="font-size:12px;margin-top:6px">&nbsp;</div>
+    <pre id="log" class="mono" style="text-align:left;background:rgba(7,11,22,.6);
+      border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:18px;
+      font-size:12px;color:var(--mut);max-height:340px;overflow:auto;white-space:pre-wrap"></pre>
+
+    <div id="assetsWrap" style="display:none;text-align:left;margin-top:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;
+           flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <h3 style="margin:0;font-size:14px">Discovered assets
+          <span class="muted" id="assetTotal" style="font-weight:400;font-size:12px"></span></h3>
+        <div id="assetChips" class="mono" style="font-size:11px;color:var(--mut)"></div>
+      </div>
+      <div id="assetList" class="mono" style="background:rgba(7,11,22,.6);
+        border:1px solid var(--line);border-radius:12px;padding:12px;max-height:300px;
+        overflow:auto;font-size:12px;color:var(--mut)"></div>
+      <div class="muted" style="font-size:11px;margin-top:6px">
+        Live — assets appear as each discovery phase completes, before the scan finishes.
+        <a href="/scan/{{ scan_id }}/assets" style="margin-left:6px">Open full inventory →</a></div>
+    </div>
+
+    <div class="muted" style="font-size:11px;margin-top:8px">
+      Live progress — discovery (passive + brute-force + permutation), then per-host
+      assessment, correlation and scoring. A full scan can take several minutes.</div>
+  </div>
+</div>
+<script>
+const scanId = {{ scan_id }};
+const t0 = Date.now();
+const SPIN = ["📡","🛰️","🔎","🧭"];
+let tick = 0;
+function fmt(s){const m=Math.floor(s/60),x=s%60;return `${m}m ${x.toString().padStart(2,'0')}s`;}
+function phaseLabel(line){
+  const l = (line||"").toLowerCase();
+  if(l.includes("network")||l.includes("asn")) return "Phase 1/4 · Network mapping";
+  if(l.includes("cloud")||l.includes("bucket")) return "Phase 1/4 · Cloud assets";
+  if(l.includes("api endpoint")) return "Phase 1/4 · API discovery";
+  if(l.includes("subdomain")||l.includes("ct/osint")||l.includes("brute")||l.includes("permutation")) return "Phase 1/4 · Discovery";
+  if(l.includes("assessing")||l.includes("assessment")) return "Phase 2/4 · Assessment";
+  if(l.includes("correlation")||l.includes("scoring")) return "Phase 3/4 · Correlation & scoring";
+  return "Working…";
+}
+async function poll(){
+  try{
+    const r = await fetch(`/api/scan/${scanId}/status`);
+    const st = await r.json();
+    const prog = st.progress || [];
+    const last = prog.length ? prog[prog.length-1] : 'Starting…';
+    document.getElementById('spinner').textContent = SPIN[tick++ % SPIN.length];
+    document.getElementById('state').textContent =
+      (st.state==='running') ? last.replace(/^\s*[\[\]*↳•\s]+/,'') : 'Scan in progress';
+    document.getElementById('phase').textContent = phaseLabel(last);
+    const el = Math.floor((Date.now()-t0)/1000);
+    document.getElementById('counts').textContent =
+      `${st.asset_count||0} assets · ${st.exposure_count||0} exposures · elapsed ${fmt(el)}`;
+    const log = document.getElementById('log');
+    log.textContent = prog.join('\n');
+    log.scrollTop = log.scrollHeight;
+
+    const assets = st.assets || [];
+    const bd = st.asset_breakdown || {};
+    if(assets.length){
+      const esc = s => String(s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+      document.getElementById('assetsWrap').style.display = 'block';
+      document.getElementById('assetTotal').textContent =
+        `· ${st.asset_count || assets.length} found`;
+      document.getElementById('assetChips').textContent =
+        Object.keys(bd).map(k => `${k}: ${bd[k]}`).join('   ');
+      document.getElementById('assetList').innerHTML = assets.slice().reverse().map(a =>
+        `<div><span style="color:#3b82f6">${esc(a.type)}</span>  ${esc(a.value)}</div>`).join('');
+    }
+    if(st.state === 'completed'){ location.reload(); return; }
+    if(st.state === 'failed'){
+      const sp=document.getElementById('spinner'); sp.classList.remove('live'); sp.textContent='⚠️';
+      document.getElementById('state').textContent='Scan failed — see log below';
+      return;
+    }
+  }catch(e){}
+  setTimeout(poll, 2000);
+}
+poll();
+</script>
+{% endblock %}
